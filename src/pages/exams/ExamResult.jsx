@@ -1,25 +1,32 @@
+// src/pages/exam/ExamResult.jsx
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../../components/bars/Sidebar";
+import Navbar from "../../components/bars/Navbar";
+import Footer from "../../components/bars/Footer";
+import DataTable from "../../components/tables/DataTable";
+import PrimaryButton from "../../components/buttons/PrimaryButton";
+import { Search } from "lucide-react";
 import { fetchExams, addExam, updateExam, deleteExam } from "../../redux/slices/examSlice";
-import { examService } from "../../pages/services/examService";
 import InputField from "../../components/forms/InputField";
 import SelectField from "../../components/forms/SelectField";
-import PrimaryButton from "../../components/buttons/PrimaryButton";
-import IconButton from "../../components/buttons/IconButton";
-import { FaEdit, FaTrash } from "react-icons/fa";
 
 const ExamResult = () => {
   const dispatch = useDispatch();
-  const { examList } = useSelector((state) => state.exam);
-  const theme = useSelector(state => state.theme.mode);
+  const navigate = useNavigate();
+  const { examList = [], loading = false } = useSelector((state) => state.exam || {});
+  const theme = useSelector((state) => state.theme.mode);
+  const sidebarWidth = 256;
 
+  const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
   const [studentName, setStudentName] = useState("");
   const [examId, setExamId] = useState("");
   const [marks, setMarks] = useState("");
 
   const loadExams = async () => {
-    const data = await examService.getAllExams();
+    const data = await fetchExams(); // make sure your service returns exam results
     dispatch(fetchExams(data));
   };
 
@@ -30,14 +37,16 @@ const ExamResult = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const resultData = { studentName, examId, marks };
+
     if (editing) {
-      const updated = await examService.updateExam(editing.id, resultData);
+      const updated = await updateExam(editing.id, resultData);
       dispatch(updateExam(updated));
       setEditing(null);
     } else {
-      const added = await examService.addExam(resultData);
+      const added = await addExam(resultData);
       dispatch(addExam(added));
     }
+
     setStudentName(""); setExamId(""); setMarks("");
   };
 
@@ -50,51 +59,115 @@ const ExamResult = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure to delete this result?")) {
-      await examService.deleteExam(id);
+      await deleteExam(id);
       dispatch(deleteExam(id));
     }
   };
 
-  return (
-    <div className={`p-4 min-h-screen ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
-      <h1 className="text-3xl font-bold mb-6">Exam Results</h1>
-      
-      <form className="mb-6 p-4 rounded shadow-md" onSubmit={handleSubmit}>
-        <InputField label="Student Name" value={studentName} onChange={(e) => setStudentName(e.target.value)} required />
-        <SelectField 
-          label="Select Exam" 
-          value={examId} 
-          onChange={(e) => setExamId(e.target.value)} 
-          options={examList.map(exam => ({ value: exam.id, label: exam.title }))} 
-          required 
-        />
-        <InputField label="Marks" value={marks} onChange={(e) => setMarks(e.target.value)} type="number" required />
-        <PrimaryButton type="submit">{editing ? "Update Result" : "Add Result"}</PrimaryButton>
-      </form>
+  const filteredResults = examList.filter((result) =>
+    `${result.studentName} ${examList.find(e => e.id === result.examId)?.title || ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
-      <table className="w-full border-collapse shadow-md">
-        <thead className={`${theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-200"}`}>
-          <tr>
-            <th className="p-3 text-left">Student</th>
-            <th className="p-3 text-left">Exam</th>
-            <th className="p-3 text-left">Marks</th>
-            <th className="p-3 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {examList.map((result) => (
-            <tr key={result.id} className={`${theme === "dark" ? "bg-gray-700" : "bg-white"} border-b`}>
-              <td className="p-3">{result.studentName}</td>
-              <td className="p-3">{examList.find(e => e.id === result.examId)?.title || "-"}</td>
-              <td className="p-3">{result.marks}</td>
-              <td className="p-3 flex gap-2">
-                <IconButton onClick={() => handleEdit(result)}><FaEdit /></IconButton>
-                <IconButton onClick={() => handleDelete(result.id)}><FaTrash /></IconButton>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+  return (
+    <div className={`flex min-h-screen ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+      {/* Sidebar */}
+      <div className="fixed top-0 left-0 h-full w-64 z-40">
+        <Sidebar />
+      </div>
+
+      {/* Content Wrapper */}
+      <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
+        {/* Navbar */}
+        <div className="fixed top-0 left-0 w-full z-30" style={{ marginLeft: sidebarWidth, height: 64 }}>
+          <Navbar />
+        </div>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 pt-20 overflow-auto">
+          {/* Header: Search + Add */}
+          <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 p-4 rounded-lg shadow ${
+            theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+          }`}>
+            <h2 className="text-2xl font-bold">Exam Results</h2>
+
+            <div className="flex gap-2 items-center">
+              <div className="relative">
+                <Search className="absolute left-2 top-2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search results..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8 pr-2 py-2 border rounded-md focus:outline-esblue focus:ring-1 focus:ring-esblue"
+                />
+              </div>
+
+              <PrimaryButton onClick={() => navigate("/exam-results/add")}>Add Result</PrimaryButton>
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className={`p-4 rounded-lg shadow-md mb-6 ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <InputField
+                label="Student Name"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                required
+              />
+              <SelectField
+                label="Select Exam"
+                value={examId}
+                onChange={(e) => setExamId(e.target.value)}
+                options={examList.map(exam => ({ value: exam.id, label: exam.title }))}
+                required
+              />
+              <InputField
+                label="Marks"
+                type="number"
+                value={marks}
+                onChange={(e) => setMarks(e.target.value)}
+                required
+              />
+              <div className="col-span-3">
+                <PrimaryButton type="submit">{editing ? "Update Result" : "Add Result"}</PrimaryButton>
+              </div>
+            </form>
+          </div>
+
+          {/* Data Table */}
+          <div className={`p-4 rounded-lg shadow-md ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+            <DataTable
+              loading={loading}
+              data={filteredResults}
+              columns={[
+                { label: "Student", field: "studentName" },
+                {
+                  label: "Exam",
+                  field: "exam",
+                  render: (result) => examList.find(e => e.id === result.examId)?.title || "-"
+                },
+                { label: "Marks", field: "marks" },
+                {
+                  label: "Actions",
+                  field: "actions",
+                  render: (result) => (
+                    <div className="flex gap-2">
+                      <PrimaryButton size="sm" onClick={() => handleEdit(result)}>Edit</PrimaryButton>
+                      <PrimaryButton size="sm" variant="danger" onClick={() => handleDelete(result.id)}>Delete</PrimaryButton>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </div>
+        </main>
+
+        {/* Footer */}
+        <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
+      </div>
     </div>
   );
 };

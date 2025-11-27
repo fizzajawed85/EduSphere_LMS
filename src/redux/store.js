@@ -23,7 +23,7 @@ export const store = configureStore({
     syllabus: syllabusReducer,
     exams: examReducer,
     fees: feeReducer,
-    admissions: admissionReducer,
+    admission: admissionReducer,
     ai: aiReducer,
     theme: themeReducer,
     school: schoolReducer,
