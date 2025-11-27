@@ -1,76 +1,116 @@
 // src/pages/syllabus/SyllabusForm.jsx
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Sidebar from "../../components/bars/Sidebar";
+import Navbar from "../../components/bars/Navbar";
+import Footer from "../../components/bars/Footer";
+import InputField from "../../components/forms/InputField";
+import SelectField from "../../components/forms/SelectField";
+import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { addSyllabus, updateSyllabus } from "../../redux/slices/syllabusSlice";
 import { syllabusService } from "../../pages/services/syllabusService";
-import PrimaryButton from "../../components/buttons/PrimaryButton";
-import IconButton from "../../components/buttons/IconButton";
 
 const SyllabusForm = ({ editData, onClose }) => {
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.mode);
+  const sidebarWidth = 256;
 
-  const [title, setTitle] = useState(editData?.title || "");
-  const [className, setClassName] = useState(editData?.className || "");
-  const [description, setDescription] = useState(editData?.description || "");
-  const [subject, setSubject] = useState(editData?.subject || "");
+  const [formData, setFormData] = useState({
+    title: editData?.title || "",
+    className: editData?.className || "",
+    subject: editData?.subject || "",
+    description: editData?.description || "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const syllabusData = { title, className, subject, description };
-
     try {
       if (editData?.id) {
-        const updated = await syllabusService.updateSyllabus(editData.id, syllabusData);
+        const updated = await syllabusService.updateSyllabus(editData.id, formData);
         dispatch(updateSyllabus(updated));
       } else {
-        const added = await syllabusService.addSyllabus(syllabusData);
+        const added = await syllabusService.addSyllabus(formData);
         dispatch(addSyllabus(added));
       }
       onClose?.();
+      setFormData({ title: "", className: "", subject: "", description: "" });
     } catch (err) {
       console.error("Error saving syllabus:", err);
+      alert("Failed to save syllabus. Check console for details.");
     }
   };
 
   return (
-    <div
-      className={`p-6 rounded-lg shadow-md ${
-        theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-      }`}
-    >
-      <h2 className="text-2xl font-bold mb-4">
-        {editData ? "Edit Syllabus" : "Add Syllabus"}
-      </h2>
+    <div className={`flex min-h-screen ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+      
+      {/* Sidebar */}
+      <div className="fixed top-0 left-0 h-full w-64 z-40">
+        <Sidebar />
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <InputField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+      {/* Content Wrapper */}
+      <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
+        
+        {/* Navbar */}
+        <div className="fixed top-0 left-0 w-full z-30" style={{ marginLeft: sidebarWidth, height: 64 }}>
+          <Navbar />
+        </div>
 
-        <InputField
-          label="Class Name"
-          value={className}
-          onChange={(e) => setClassName(e.target.value)}
-          required
-        />
+        {/* Main Content */}
+        <main className="flex-1 p-6 pt-20 overflow-auto">
+          <div className="max-w-4xl mx-auto bg-eswhite text-esblack shadow rounded-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6">
+              {editData ? "Edit Syllabus" : "Add New Syllabus"}
+            </h2>
 
-        <InputField
-          label="Subject"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          required
-        />
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="Title *"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+              />
+              <InputField
+                label="Class Name *"
+                name="className"
+                value={formData.className}
+                onChange={handleChange}
+                required
+              />
+              <InputField
+                label="Subject *"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+              />
+              <div className="col-span-2">
+                <InputField
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  textarea
+                />
+              </div>
 
-        <InputField
-          label="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          textarea
-        />
+              <div className="col-span-2">
+                <PrimaryButton type="submit">
+                  {editData ? "Update Syllabus" : "Add Syllabus"}
+                </PrimaryButton>
+              </div>
+            </form>
+          </div>
+        </main>
 
-        <PrimaryButton type="submit">
-          {editData ? "Update" : "Add"}
-        </PrimaryButton>
-      </form>
+        {/* Footer */}
+        <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
+      </div>
     </div>
   );
 };

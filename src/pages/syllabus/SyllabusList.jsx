@@ -1,98 +1,106 @@
 // src/pages/syllabus/SyllabusList.jsx
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../../components/bars/Sidebar";
+import Navbar from "../../components/bars/Navbar";
+import Footer from "../../components/bars/Footer";
+import DataTable from "../../components/tables/DataTable";
+import PrimaryButton from "../../components/buttons/PrimaryButton";
+import { Search } from "lucide-react";
 import { fetchSyllabus, deleteSyllabus } from "../../redux/slices/syllabusSlice";
-import { syllabusService } from "../../pages/services/syllabusService";
-import SyllabusForm from "./SyllabusForm";
-import IconButton from "../../components/buttons/IconButton";
-import { FaEdit, FaTrash } from "react-icons/fa";
 
 const SyllabusList = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { syllabusList = [], loading = false } = useSelector((state) => state.syllabus);
+  const theme = useSelector((state) => state.theme.mode);
+  const sidebarWidth = 256;
 
-  const syllabusList = useSelector(
-    (state) => state.syllabus.syllabusList || []
-  );
-
-  const theme = useSelector((state) => state.theme.theme);
-
-  const [editing, setEditing] = useState(null);
-
-  const loadSyllabus = async () => {
-    try {
-      const data = await syllabusService.getAllSyllabus();
-      dispatch(fetchSyllabus(data));
-    } catch (err) {
-      console.error("Error fetching syllabus:", err);
-    }
-  };
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadSyllabus();
-  }, []);
+    dispatch(fetchSyllabus());
+  }, [dispatch]);
 
-  const handleDelete = async (id) => {
+  const filteredSyllabus = syllabusList.filter((syl) =>
+    `${syl.title} ${syl.className} ${syl.subject}`.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleDelete = (id) => {
     if (window.confirm("Are you sure to delete this syllabus?")) {
-      await syllabusService.deleteSyllabus(id);
       dispatch(deleteSyllabus(id));
     }
   };
 
   return (
-    <div
-      className={`p-4 ${
-        theme === "dark"
-          ? "bg-gray-900 text-white"
-          : "bg-gray-100 text-gray-900"
-      } min-h-screen`}
-    >
-      <h1 className="text-3xl font-bold mb-6">Syllabus List</h1>
-
-      <div className="mb-6">
-        <SyllabusForm onClose={loadSyllabus} editData={editing} />
+    <div className={`flex min-h-screen ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+      {/* Sidebar */}
+      <div className="fixed top-0 left-0 h-full w-64 z-40">
+        <Sidebar />
       </div>
 
-      <table className="w-full border-collapse shadow-md">
-        <thead
-          className={`${
-            theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-200"
-          }`}
-        >
-          <tr>
-            <th className="p-3 text-left">Title</th>
-            <th className="p-3 text-left">Class</th>
-            <th className="p-3 text-left">Subject</th>
-            <th className="p-3 text-left">Description</th>
-            <th className="p-3 text-left">Actions</th>
-          </tr>
-        </thead>
+      {/* Content Wrapper */}
+      <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
+        {/* Navbar */}
+        <div className="fixed top-0 left-0 w-full z-30" style={{ marginLeft: sidebarWidth, height: 64 }}>
+          <Navbar />
+        </div>
 
-        <tbody>
-          {syllabusList.map((syl) => (
-            <tr
-              key={syl.id}
-              className={`${
-                theme === "dark" ? "bg-gray-700" : "bg-white"
-              } border-b`}
-            >
-              <td className="p-3">{syl.title}</td>
-              <td className="p-3">{syl.className}</td>
-              <td className="p-3">{syl.subject}</td>
-              <td className="p-3">{syl.description}</td>
+        {/* Main Content */}
+        <main className="flex-1 p-6 pt-20 overflow-auto">
+          {/* Header: Search + Add */}
+          <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 p-4 rounded-lg shadow ${
+            theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+          }`}>
+            <h2 className="text-2xl font-bold">Syllabus List</h2>
 
-              <td className="p-3 flex gap-2">
-                <IconButton onClick={() => setEditing(syl)}>
-                  <FaEdit />
-                </IconButton>
+            <div className="flex gap-2 items-center">
+              <div className="relative">
+                <Search className="absolute left-2 top-2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search syllabus..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8 pr-2 py-2 border rounded-md focus:outline-esblue focus:ring-1 focus:ring-esblue"
+                />
+              </div>
 
-                <IconButton onClick={() => handleDelete(syl.id)}>
-                  <FaTrash />
-                </IconButton>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              <PrimaryButton onClick={() => navigate("/syllabus/add")}>Add Syllabus</PrimaryButton>
+            </div>
+          </div>
+
+          {/* Data Table */}
+          <div className={`p-4 rounded-lg shadow-md ${
+            theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+          }`}>
+            <DataTable
+              loading={loading}
+              data={filteredSyllabus}
+              columns={[
+                { label: "Title", field: "title" },
+                { label: "Class", field: "className" },
+                { label: "Subject", field: "subject" },
+                { label: "Description", field: "description" },
+                {
+                  label: "Actions",
+                  field: "actions",
+                  render: (syl) => (
+                    <div className="flex gap-2">
+                      <PrimaryButton size="sm" onClick={() => navigate(`/syllabus/edit/${syl.id}`)}>Edit</PrimaryButton>
+                      <PrimaryButton size="sm" variant="danger" onClick={() => handleDelete(syl.id)}>Delete</PrimaryButton>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </div>
+        </main>
+
+        {/* Footer */}
+        <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
+      </div>
     </div>
   );
 };

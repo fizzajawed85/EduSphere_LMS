@@ -1,13 +1,19 @@
-// src/pages/subjects/SubjectForm.jsx
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import Sidebar from "../../components/bars/Sidebar";
+import Navbar from "../../components/bars/Navbar";
+import Footer from "../../components/bars/Footer";
+import InputField from "../../components/forms/InputField";
+import SelectField from "../../components/forms/SelectField";
+import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { addSubject } from "../../redux/slices/subjectSlice";
-import  PrimaryButton  from "../../components/buttons/PrimaryButton";
-import { subjectService } from "../../pages/services/subjectService";
 
-const SubjectForm = () => {
+const SubjectForm = ({ onSuccess }) => {
   const dispatch = useDispatch();
-  const [subjectData, setSubjectData] = useState({
+  const theme = useSelector((state) => state.theme.mode);
+  const sidebarWidth = 256;
+
+  const [formData, setFormData] = useState({
     name: "",
     className: "",
     teacherAssigned: "",
@@ -15,88 +21,88 @@ const SubjectForm = () => {
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSubjectData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!subjectData.name || !subjectData.className) {
+    if (!formData.name || !formData.className) {
       alert("Please fill required fields");
       return;
     }
 
-    // Dispatch Redux action
-    dispatch(addSubject(subjectData));
+    dispatch(addSubject(formData));
 
-    // Optional: directly add using service
-    // await subjectService.addSubject(subjectData);
-
-    setSubjectData({
+    setFormData({
       name: "",
       className: "",
       teacherAssigned: "",
       description: "",
     });
+
+    if (onSuccess) onSuccess();
   };
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50 flex justify-center items-start">
-      <form
-        className="w-full max-w-lg bg-white shadow-md rounded-lg p-6 space-y-4"
-        onSubmit={handleSubmit}
-      >
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Add Subject</h2>
+    <div className={`flex min-h-screen ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+      {/* Sidebar */}
+      <div className="fixed top-0 left-0 h-full w-64 z-40">
+        <Sidebar />
+      </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Subject Name *</label>
-          <input
-            type="text"
-            name="name"
-            value={subjectData.name}
-            onChange={handleChange}
-            placeholder="Enter subject name"
-            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      {/* Content Wrapper */}
+      <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
+        {/* Navbar */}
+        <div className="fixed top-0 left-0 w-full z-30" style={{ marginLeft: sidebarWidth, height: 64 }}>
+          <Navbar />
         </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Class *</label>
-          <input
-            type="text"
-            name="className"
-            value={subjectData.className}
-            onChange={handleChange}
-            placeholder="Enter class for this subject"
-            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {/* Main Content */}
+        <main className="flex-1 p-6 pt-20 overflow-auto">
+          <div className="max-w-4xl mx-auto bg-eswhite text-esblack shadow rounded-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6">Add New Subject</h2>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Teacher Assigned</label>
-          <input
-            type="text"
-            name="teacherAssigned"
-            value={subjectData.teacherAssigned}
-            onChange={handleChange}
-            placeholder="Enter teacher name (optional)"
-            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField
+                label="Subject Name *"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+              <InputField
+                label="Class *"
+                name="className"
+                value={formData.className}
+                onChange={handleChange}
+                required
+              />
+              <InputField
+                label="Teacher Assigned"
+                name="teacherAssigned"
+                value={formData.teacherAssigned}
+                onChange={handleChange}
+              />
+              <div className="col-span-2">
+                <InputField
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  textarea
+                />
+              </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Description</label>
-          <textarea
-            name="description"
-            value={subjectData.description}
-            onChange={handleChange}
-            placeholder="Optional description"
-            className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+              <div className="col-span-2">
+                <PrimaryButton type="submit">Add Subject</PrimaryButton>
+              </div>
+            </form>
+          </div>
+        </main>
 
-        <PrimaryButton type="submit">Add Subject</PrimaryButton>
-      </form>
+        {/* Footer */}
+        <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
+      </div>
     </div>
   );
 };
