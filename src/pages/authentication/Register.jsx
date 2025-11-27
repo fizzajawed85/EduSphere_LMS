@@ -6,10 +6,6 @@ import { auth } from "../../firebase/config";
 import { Link, useNavigate } from "react-router-dom";
 import RoleSelect from "../../components/auth/RoleSelect";
 
-// Import images from src for bundler-safe paths
-import LogoImg from '../../assets/img/img.png';
-import BgImg from '../../assets/img/bg.jpg';
-
 export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -30,6 +26,7 @@ export default function Register() {
     try {
       const userData = await createUserWithEmailAndPassword(auth, email, password);
 
+      // Save into redux (serializable only)
       dispatch(
         loginUser({
           uid: userData.user.uid,
@@ -57,13 +54,13 @@ export default function Register() {
         {/* LEFT IMAGE SECTION */}
         <div
           className="relative hidden md:flex flex-1 h-screen bg-cover bg-center"
-          style={{ backgroundImage: `url(${BgImg})` }}
+          style={{ backgroundImage: "url('/assets/img/bg.jpg')" }}
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4 p-8 rounded-lg border-2 border-sky-100 bg-transparent">
               <div className="bg-esorange p-6 rounded-full flex items-center justify-center">
                 <img
-                  src={LogoImg}
+                  src="/assets/img/img.png"
                   alt="Logo"
                   className="w-24 h-24 object-contain"
                 />

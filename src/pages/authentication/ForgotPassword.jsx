@@ -3,10 +3,6 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { Link } from "react-router-dom";
 
-// Import images for bundler-safe paths
-import LogoImg from '../../assets/img/img.png';
-import BgImg from '../../assets/img/bg.jpg';
-
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
@@ -36,13 +32,13 @@ export default function ForgotPassword() {
       {/* LEFT SECTION */}
       <div
         className="relative hidden md:flex flex-1 h-screen bg-cover bg-center"
-        style={{ backgroundImage: `url(${BgImg})` }}
+        style={{ backgroundImage: "url('/assets/img/bg.jpg')" }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4 p-8 rounded-lg border-2 border-sky-100 bg-transparent">
             <div className="bg-esorange p-6 rounded-full flex items-center justify-center">
               <img
-                src={LogoImg}
+                src="/assets/img/img.png"
                 alt="Logo"
                 className="w-24 h-24 object-contain"
               />
