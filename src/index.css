@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-eswhite text-esblack transition-colors duration-300;
+}
+
+html.dark body {
+  @apply bg-esdarkblack text-eswhite;
+}
+
+/* Optional scroll bar style */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #ffc001;
+  border-radius: 10px;
+}
