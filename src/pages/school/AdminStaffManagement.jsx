@@ -93,7 +93,7 @@ const AdminStaffManagement = () => {
         <main className="flex-1 p-6 pt-20 overflow-auto">
           {/* Form Card */}
           <div className="max-w-4xl mx-auto bg-eswhite text-esblack dark:bg-esdarkblack dark:text-white shadow rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-semibold mb-6 text-center">Admin & Staff Management</h2>
+            <h2 className="text-3xl font-semibold mb-6 text-left">Admin & Staff Management</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField label="Full Name" name="name" value={formData.name} onChange={handleChange} required />
               <InputField label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
@@ -120,7 +120,7 @@ const AdminStaffManagement = () => {
 
           {/* Admins List Table */}
           <div className="max-w-6xl mx-auto overflow-x-auto rounded shadow-md">
-            <h2 className="text-2xl font-semibold mb-4">All Admin & Staff</h2>
+            <h2 className="text-3xl font-semibold mb-4 text-left">All Admin & Staff</h2>
             {loading ? (
               <p>Loading...</p>
             ) : (
@@ -164,4 +164,5 @@ const AdminStaffManagement = () => {
 };
 
 export default AdminStaffManagement;
+
 
