@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function RadioGroup({ label, options, value, onChange }) {
+export default function RadioGroup({ label, name, options, value, onChange }) {
   return (
     <div className="mb-4">
       <label className="block text-esblack dark:text-white mb-2">{label}</label>
@@ -12,10 +12,10 @@ export default function RadioGroup({ label, options, value, onChange }) {
           >
             <input
               type="radio"
-              name={label}
+              name={name}
               value={opt.value}
               checked={value === opt.value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={() => onChange(opt.value)} // send value only
               className="accent-esyellow"
             />
             <span>{opt.label}</span>
@@ -25,4 +25,5 @@ export default function RadioGroup({ label, options, value, onChange }) {
     </div>
   );
 }
+
 

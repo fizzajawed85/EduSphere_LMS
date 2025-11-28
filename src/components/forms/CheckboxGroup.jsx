@@ -1,12 +1,13 @@
 import React from "react";
 
-export default function CheckboxGroup({ label, options, values, onChange }) {
+export default function CheckboxGroup({ label, name, options, values, onChange }) {
   const handleCheck = (val) => {
-    if (values.includes(val)) {
-      onChange(values.filter((v) => v !== val));
-    } else {
-      onChange([...values, val]);
-    }
+    let updatedValues = values.includes(val)
+      ? values.filter((v) => v !== val)
+      : [...values, val];
+
+    // Send event-like object
+    onChange({ target: { name, value: updatedValues } });
   };
 
   return (

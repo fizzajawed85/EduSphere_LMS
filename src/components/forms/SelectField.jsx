@@ -1,22 +1,24 @@
 import React, { useState } from "react";
-import { ChevronDown } from "lucide-react"; // already installed icon
+import { ChevronDown } from "lucide-react";
 
-export default function CustomSelect({ label, options, value, onChange }) {
+export default function CustomSelect({ label, options = [], value, onChange }) {
   const [open, setOpen] = useState(false);
 
+  // Handle selecting a value
   const handleSelect = (val) => {
-    onChange(val);
+    onChange(val); // Pass only the value, not the event
     setOpen(false);
   };
 
-  const selectedLabel = options.find(opt => (opt.value ?? opt) === value)?.label ?? value;
+  // Display the label of the selected value
+  const selectedLabel = options.find(opt => (opt.value ?? opt) === value)?.label ?? "";
 
   return (
     <div className="mb-4 relative">
       <label className="block text-esblack dark:text-eswhite mb-1">{label}</label>
-      
+
       {/* Select Box */}
-      <div 
+      <div
         className="w-full p-2 rounded border border-gray-300 dark:border-gray-700 bg-eswhite dark:bg-esblack text-esblack dark:text-eswhite cursor-pointer flex justify-between items-center"
         onClick={() => setOpen(!open)}
       >
@@ -38,11 +40,10 @@ export default function CustomSelect({ label, options, value, onChange }) {
               >
                 {label}
               </div>
-            )
+            );
           })}
         </div>
       )}
     </div>
   );
 }
-

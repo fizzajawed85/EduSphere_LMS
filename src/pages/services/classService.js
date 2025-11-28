@@ -1,4 +1,5 @@
-import { getDatabase, ref, push, set, update, onValue, remove } from "firebase/database";
+// src/pages/services/classService.js
+import { getDatabase, ref, push, set, onValue } from "firebase/database";
 import app from "../../firebase/config";
 
 const db = getDatabase(app);
@@ -12,26 +13,6 @@ export const classService = {
       return { id: newClassRef.key, ...classData };
     } catch (error) {
       console.error("Error adding class:", error);
-      throw error;
-    }
-  },
-
-  updateClass: async (id, classData) => {
-    try {
-      const classRef = ref(db, `classes/${id}`);
-      await update(classRef, classData);
-    } catch (error) {
-      console.error("Error updating class:", error);
-      throw error;
-    }
-  },
-
-  deleteClass: async (id) => {
-    try {
-      const classRef = ref(db, `classes/${id}`);
-      await remove(classRef);
-    } catch (error) {
-      console.error("Error deleting class:", error);
       throw error;
     }
   },
@@ -51,14 +32,9 @@ export const classService = {
   },
 };
 
-// Promise-based named export for async/await in slice
+// Promise-based function for Redux async/await
 export const fetchClassesService = async () => {
-  let classesArray = [];
-  await new Promise((resolve) => {
-    classService.fetchClasses((data) => {
-      classesArray = data;
-      resolve();
-    });
+  return new Promise((resolve) => {
+    classService.fetchClasses((data) => resolve(data));
   });
-  return classesArray;
 };

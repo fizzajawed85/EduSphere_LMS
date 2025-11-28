@@ -1,8 +1,9 @@
+// src/pages/fee/AIFeePrediction.jsx
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import PrimaryButton from "../../components/buttons/PrimaryButton";
 import InputField from "../../components/forms/InputField";
-import SelectField from "../../components/forms/SelectField";
+import CustomField from "../../components/forms/SelectField";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Sidebar from "../../components/bars/Sidebar";
 import Navbar from "../../components/bars/Navbar";
@@ -26,11 +27,11 @@ const AIFeePrediction = () => {
   const handlePredict = () => {
     if (!studentName || !className) return;
     setLoading(true);
+
     setTimeout(() => {
-      // Simulate AI prediction based on class
       const base = className === "Class 1" ? 1000 :
                    className === "Class 2" ? 1500 : 2000;
-      const randomOffset = Math.floor(Math.random() * 500); // Add randomness
+      const randomOffset = Math.floor(Math.random() * 500);
       setPredictedFee(base + randomOffset);
       setLoading(false);
     }, 1500);
@@ -49,17 +50,8 @@ const AIFeePrediction = () => {
           <h1 className="text-3xl font-bold mb-6">AI Fee Prediction</h1>
 
           <div className={`max-w-md p-4 rounded-lg shadow-md ${theme === "dark" ? "bg-esdarkblack" : "bg-eswhite"}`}>
-            <InputField
-              label="Student Name"
-              value={studentName}
-              onChange={e => setStudentName(e.target.value)}
-            />
-            <SelectField
-              label="Class"
-              value={className}
-              onChange={e => setClassName(e.target.value)}
-              options={classes}
-            />
+            <InputField label="Student Name" value={studentName} onChange={e => setStudentName(e.target.value)} />
+            <CustomField label="Class" value={className} onChange={setClassName} options={classes} placeholder="Select Class" />
             <PrimaryButton onClick={handlePredict} disabled={loading}>
               {loading ? <AiOutlineLoading3Quarters className="animate-spin inline" /> : "Predict Fee"}
             </PrimaryButton>
@@ -81,3 +73,4 @@ const AIFeePrediction = () => {
 };
 
 export default AIFeePrediction;
+

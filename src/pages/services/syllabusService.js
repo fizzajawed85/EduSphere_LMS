@@ -1,33 +1,29 @@
-// src/services/syllabusService.js
-import { getDatabase, ref, set, push, remove, get, child } from "firebase/database";
-import app from "../../firebase/config"; // Firebase config import
+/// src/pages/services/syllabusService.js
+import { getDatabase, ref, push, set, remove, get } from "firebase/database";
+import app from "../../firebase/config"; // Firebase config
 
 const db = getDatabase(app);
 const syllabusRef = ref(db, "syllabus");
 
 export const syllabusService = {
-  // Fetch all syllabus
   getAllSyllabus: async () => {
     const snapshot = await get(syllabusRef);
     const data = snapshot.val() || {};
-    return Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+    return Object.keys(data).map(key => ({ id: key, ...data[key] }));
   },
 
-  // Add new syllabus
-  addSyllabus: async (syllabusData) => {
+  addSyllabus: async (data) => {
     const newRef = push(syllabusRef);
-    await set(newRef, syllabusData);
-    return { id: newRef.key, ...syllabusData };
+    await set(newRef, data);
+    return { id: newRef.key, ...data };
   },
 
-  // Update syllabus
-  updateSyllabus: async (id, syllabusData) => {
+  updateSyllabus: async (id, data) => {
     const updateRef = ref(db, `syllabus/${id}`);
-    await set(updateRef, syllabusData);
-    return { id, ...syllabusData };
+    await set(updateRef, data);
+    return { id, ...data };
   },
 
-  // Delete syllabus
   deleteSyllabus: async (id) => {
     const deleteRef = ref(db, `syllabus/${id}`);
     await remove(deleteRef);

@@ -32,12 +32,32 @@ const TeacherForm = () => {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleFile = (e) =>
-    setForm({ ...form, photo: e.target.files[0] });
+  const handleFile = (e) => setForm({ ...form, photo: e.target.files[0] });
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!form.firstName || !form.lastName || !form.email) {
+      alert("Please fill required fields");
+      return;
+    }
+
     dispatch(addTeacher(form));
+
+    alert("Teacher added successfully!");
+    setForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      subject: "",
+      qualification: "",
+      gender: "",
+      address: "",
+      country: "",
+      dob: "",
+      photo: null,
+    });
   };
 
   return (
@@ -53,25 +73,22 @@ const TeacherForm = () => {
         <Sidebar />
       </div>
 
-      {/* Content Wrapper */}
-      <div
-        className="flex-1 flex flex-col"
-        style={{ marginLeft: sidebarWidth }}
-      >
+      {/* Content */}
+      <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
         {/* Navbar */}
         <div
-          className="fixed top-0 left-0 z-30 w-full"
+          className="fixed top-0 left-0 w-full z-30"
           style={{ marginLeft: sidebarWidth, height: 64 }}
         >
           <Navbar />
         </div>
 
-        {/* Main Content */}
+        {/* Main */}
         <main className="flex-1 p-6 pt-20 overflow-auto">
-          <div className="max-w-4xl mx-auto bg-eswhite text-esblack shadow rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6">Add New Teacher</h2>
+          <div className="max-w-4xl mx-auto bg-eswhite dark:bg-esdarkblack shadow rounded-lg p-6">
+            <h2 className="text-2xl font-bold mb-6">Add New Teacher</h2>
 
-            <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
               <InputField
                 name="firstName"
                 label="First Name"
@@ -95,7 +112,7 @@ const TeacherForm = () => {
 
               <InputField
                 name="phone"
-                label="Phone Number"
+                label="Phone"
                 value={form.phone}
                 onChange={handleChange}
               />
@@ -103,19 +120,12 @@ const TeacherForm = () => {
               <SelectField
                 name="subject"
                 label="Subject"
-                options={[
-                  "Math",
-                  "Physics",
-                  "Chemistry",
-                  "Biology",
-                  "Computer",
-                  "English",
-                  "Urdu",
-                  "Islamiyat",
-                  "History",
-                ].map((s) => ({ label: s, value: s }))}
                 value={form.subject}
                 onChange={(val) => setForm({ ...form, subject: val })}
+                options={[
+                  "Math", "Physics", "Chemistry", "Biology",
+                  "Computer", "English", "Urdu", "Islamiyat", "History"
+                ].map((s) => ({ label: s, value: s }))}
               />
 
               <InputField
@@ -128,12 +138,12 @@ const TeacherForm = () => {
               <RadioGroup
                 name="gender"
                 label="Gender"
-                options={["Male", "Female", "Other"].map((g) => ({
-                  label: g,
-                  value: g,
-                }))}
                 value={form.gender}
                 onChange={(val) => setForm({ ...form, gender: val })}
+                options={["Male", "Female", "Other"].map((g) => ({
+                  label: g,
+                  value: g
+                }))}
               />
 
               <InputField
@@ -158,10 +168,8 @@ const TeacherForm = () => {
               />
 
               {/* Photo Upload */}
-              <div className="col-span-2">
-                <label className="block font-medium mb-2">
-                  Profile Photo
-                </label>
+              <div className="col-span-1 md:col-span-2">
+                <label className="block mb-2 font-medium">Profile Photo</label>
                 <input
                   type="file"
                   onChange={handleFile}
@@ -169,24 +177,20 @@ const TeacherForm = () => {
                 />
               </div>
 
-              {/* Save Button */}
-              <div className="col-span-2">
-                <PrimaryButton>Save Teacher</PrimaryButton>
+              {/* Submit */}
+              <div className="col-span-1 md:col-span-2">
+                <PrimaryButton type="submit">Save Teacher</PrimaryButton>
               </div>
             </form>
           </div>
         </main>
 
         {/* Footer */}
-        <Footer
-          style={{
-            marginLeft: sidebarWidth,
-            width: `calc(100% - ${sidebarWidth}px)`,
-          }}
-        />
+        <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
       </div>
     </div>
   );
 };
 
 export default TeacherForm;
+

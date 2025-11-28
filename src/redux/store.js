@@ -11,6 +11,7 @@ import admissionReducer from "./slices/admissionSlice";
 import aiReducer from "./slices/aiSlice";
 import themeReducer from "./slices/themeSlice";
 import schoolReducer from "./slices/schoolSlice";
+import resultReducer from "./slices/resultSlice";
 
 
 export const store = configureStore({
@@ -18,15 +19,15 @@ export const store = configureStore({
     auth: authReducer,
     students: studentReducer,
     teacher: teacherReducer,
-    classes: classReducer,
+    class: classReducer,
     subjects: subjectReducer,
     syllabus: syllabusReducer,
-    exams: examReducer,
-    fees: feeReducer,
+    exam: examReducer,
+    fee: feeReducer,
     admission: admissionReducer,
     ai: aiReducer,
     theme: themeReducer,
     school: schoolReducer,
-    
+    result: resultReducer,
   },
 });

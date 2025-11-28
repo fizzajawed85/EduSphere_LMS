@@ -4,22 +4,21 @@ import app from "../../firebase/config";
 const db = getDatabase(app);
 
 export const teacherService = {
-  // Fetch all teachers (callback style)
-  fetchTeachers: (callback) => {
-    try {
-      const teachersRef = ref(db, "teachers");
-      onValue(teachersRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        const teachersList = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
-        callback(teachersList);
-      });
-    } catch (error) {
-      console.error("Error fetching teachers:", error);
-      callback([]);
-    }
+  fetchTeachers: async () => {
+    const teachersRef = ref(db, "teachers");
+    return new Promise((resolve, reject) => {
+      onValue(
+        teachersRef,
+        (snapshot) => {
+          const data = snapshot.val() || {};
+          const teachersList = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+          resolve(teachersList);
+        },
+        (error) => reject(error)
+      );
+    });
   },
 
-  // Add new teacher
   addTeacher: async (teacherData) => {
     try {
       const teachersRef = ref(db, "teachers");
@@ -32,7 +31,6 @@ export const teacherService = {
     }
   },
 
-  // Update teacher by ID
   updateTeacher: async (id, teacherData) => {
     try {
       const teacherRef = ref(db, `teachers/${id}`);
@@ -43,7 +41,6 @@ export const teacherService = {
     }
   },
 
-  // Delete teacher by ID
   deleteTeacher: async (id) => {
     try {
       const teacherRef = ref(db, `teachers/${id}`);
@@ -55,16 +52,9 @@ export const teacherService = {
   },
 };
 
-// Promise-based async helpers for Redux slices
+// Redux-friendly promise-based exports
 export const fetchTeachersService = async () => {
-  let teachersArray = [];
-  await new Promise((resolve) => {
-    teacherService.fetchTeachers((data) => {
-      teachersArray = data;
-      resolve();
-    });
-  });
-  return teachersArray;
+  return await teacherService.fetchTeachers();
 };
 
 export const addTeacherService = async (teacher) => {

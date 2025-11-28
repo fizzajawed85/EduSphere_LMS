@@ -1,35 +1,38 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchClassesService } from "../../pages/services/classService";
+import { classService } from "../../pages/services/classService";
 
-// Async thunk to fetch classes
-export const fetchClasses = createAsyncThunk("class/fetch", async () => {
-  const data = await fetchClassesService();
-  return data;
-});
+// Add Class
+export const addClassThunk = createAsyncThunk(
+  "class/addClass",
+  async (classData) => {
+    const newClass = await classService.addClass(classData);
+    return newClass;
+  }
+);
+
+// Real-time subscription (plain thunk)
+export const subscribeClasses = () => (dispatch) => {
+  classService.fetchClasses((data) => {
+    dispatch(setClasses(data));
+  });
+};
 
 const classSlice = createSlice({
   name: "class",
   initialState: { classes: [], loading: false },
   reducers: {
-    addClass: (state, action) => {
-      state.classes.push(action.payload);
+    setClasses: (state, action) => {
+      state.classes = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchClasses.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchClasses.fulfilled, (state, action) => {
-        state.classes = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchClasses.rejected, (state) => {
-        state.loading = false;
+      // Add Class
+      .addCase(addClassThunk.fulfilled, (state, action) => {
+        state.classes.push(action.payload);
       });
   },
 });
 
-export const { addClass } = classSlice.actions;
+export const { setClasses } = classSlice.actions;
 export default classSlice.reducer;
-

@@ -1,19 +1,22 @@
+// src/pages/students/StudentList.jsx
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 import Sidebar from "../../components/bars/Sidebar";
 import Navbar from "../../components/bars/Navbar";
 import Footer from "../../components/bars/Footer";
-import DataTable from "../../components/tables/DataTable";
 import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { Search } from "lucide-react";
+import DataTable from "../../components/tables/DataTable";
+
 import { fetchStudents } from "../../redux/slices/studentSlice";
 
 const StudentList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { students = [], loading = false } = useSelector((state) => state.students);
   const theme = useSelector((state) => state.theme.mode);
+  const { students = [], loading } = useSelector((state) => state.students);
   const sidebarWidth = 256;
 
   const [search, setSearch] = useState("");
@@ -22,20 +25,14 @@ const StudentList = () => {
     dispatch(fetchStudents());
   }, [dispatch]);
 
-  const filteredStudents = students.filter((student) =>
+  const filteredStudents = students.filter(student =>
     `${student.firstName} ${student.lastName}`.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div
-      className={`flex min-h-screen ${
-        theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
-      }`}
-    >
+    <div className={`flex min-h-screen ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
       {/* Sidebar */}
-      <div className="fixed top-0 left-0 h-full w-64 z-40">
-        <Sidebar />
-      </div>
+      <div className="fixed top-0 left-0 h-full w-64 z-40"><Sidebar /></div>
 
       {/* Content Wrapper */}
       <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
@@ -46,7 +43,7 @@ const StudentList = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-6 pt-20 overflow-auto">
-          {/* Header: Search + Add */}
+          {/* Header */}
           <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 p-4 rounded-lg shadow ${
             theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
           }`}>
@@ -63,7 +60,6 @@ const StudentList = () => {
                   className="pl-8 pr-2 py-2 border rounded-md focus:outline-esblue focus:ring-1 focus:ring-esblue"
                 />
               </div>
-
               <PrimaryButton onClick={() => navigate("/students/add")}>Add Student</PrimaryButton>
             </div>
           </div>
@@ -87,7 +83,6 @@ const StudentList = () => {
           </div>
         </main>
 
-        {/* Footer */}
         <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
       </div>
     </div>
@@ -95,4 +90,5 @@ const StudentList = () => {
 };
 
 export default StudentList;
+
 

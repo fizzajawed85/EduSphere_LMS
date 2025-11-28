@@ -8,14 +8,26 @@ import Footer from "../../components/bars/Footer";
 import DataTable from "../../components/tables/DataTable";
 import PrimaryButton from "../../components/buttons/PrimaryButton";
 import { Search } from "lucide-react";
-import { fetchExams, addExam, updateExam, deleteExam } from "../../redux/slices/examSlice";
 import InputField from "../../components/forms/InputField";
-import SelectField from "../../components/forms/SelectField";
+import CustomSelect from "../../components/forms/SelectField";
+
+// Result slice
+import {
+  fetchResultsThunk,
+  addResultThunk,
+  updateResultThunk,
+  deleteResultThunk,
+} from "../../redux/slices/resultSlice";
+import { fetchExamsThunk } from "../../redux/slices/examSlice";
 
 const ExamResult = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { examList = [], loading = false } = useSelector((state) => state.exam || {});
+
+  const { examList = [] } = useSelector((state) => state.exam || {});
+  const { resultList = [], loading = false } = useSelector(
+    (state) => state.result || {}
+  );
   const theme = useSelector((state) => state.theme.mode);
   const sidebarWidth = 256;
 
@@ -25,29 +37,36 @@ const ExamResult = () => {
   const [examId, setExamId] = useState("");
   const [marks, setMarks] = useState("");
 
-  const loadExams = async () => {
-    const data = await fetchExams(); // make sure your service returns exam results
-    dispatch(fetchExams(data));
-  };
-
+  // Fetch exams and results
   useEffect(() => {
-    loadExams();
-  }, []);
+    dispatch(fetchExamsThunk());
+    dispatch(fetchResultsThunk());
+  }, [dispatch]);
+
+  const resetForm = () => {
+    setStudentName("");
+    setExamId("");
+    setMarks("");
+    setEditing(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!studentName || !examId || !marks) return;
+
     const resultData = { studentName, examId, marks };
 
-    if (editing) {
-      const updated = await updateExam(editing.id, resultData);
-      dispatch(updateExam(updated));
-      setEditing(null);
-    } else {
-      const added = await addExam(resultData);
-      dispatch(addExam(added));
+    try {
+      if (editing) {
+        await dispatch(updateResultThunk({ id: editing.id, resultData })).unwrap();
+      } else {
+        await dispatch(addResultThunk(resultData)).unwrap();
+      }
+      resetForm();
+    } catch (err) {
+      console.error("Failed to save result:", err);
+      alert("Error saving result. Check console.");
     }
-
-    setStudentName(""); setExamId(""); setMarks("");
   };
 
   const handleEdit = (result) => {
@@ -58,38 +77,49 @@ const ExamResult = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure to delete this result?")) {
-      await deleteExam(id);
-      dispatch(deleteExam(id));
+    if (!window.confirm("Are you sure to delete this result?")) return;
+    try {
+      await dispatch(deleteResultThunk(id)).unwrap();
+    } catch (err) {
+      console.error("Failed to delete result:", err);
     }
   };
 
-  const filteredResults = examList.filter((result) =>
-    `${result.studentName} ${examList.find(e => e.id === result.examId)?.title || ""}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const filteredResults = resultList.filter(
+    (result) =>
+      result?.examId &&
+      `${result.studentName} ${examList.find((e) => e.id === result.examId)?.title || ""}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
   );
 
   return (
-    <div className={`flex min-h-screen ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+    <div
+      className={`flex min-h-screen ${
+        theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+      }`}
+    >
       {/* Sidebar */}
       <div className="fixed top-0 left-0 h-full w-64 z-40">
         <Sidebar />
       </div>
 
-      {/* Content Wrapper */}
+      {/* Content */}
       <div className="flex-1 flex flex-col" style={{ marginLeft: sidebarWidth }}>
-        {/* Navbar */}
-        <div className="fixed top-0 left-0 w-full z-30" style={{ marginLeft: sidebarWidth, height: 64 }}>
+        <div
+          className="fixed top-0 left-0 w-full z-30"
+          style={{ marginLeft: sidebarWidth, height: 64 }}
+        >
           <Navbar />
         </div>
 
-        {/* Main Content */}
         <main className="flex-1 p-6 pt-20 overflow-auto">
-          {/* Header: Search + Add */}
-          <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 p-4 rounded-lg shadow ${
-            theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
-          }`}>
+          {/* Header */}
+          <div
+            className={`flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4 p-4 rounded-lg shadow ${
+              theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+            }`}
+          >
             <h2 className="text-2xl font-bold">Exam Results</h2>
 
             <div className="flex gap-2 items-center">
@@ -103,13 +133,18 @@ const ExamResult = () => {
                   className="pl-8 pr-2 py-2 border rounded-md focus:outline-esblue focus:ring-1 focus:ring-esblue"
                 />
               </div>
-
-              <PrimaryButton onClick={() => navigate("/exam-results/add")}>Add Result</PrimaryButton>
+              <PrimaryButton onClick={() => navigate("/exam-results/add")}>
+                Add Result
+              </PrimaryButton>
             </div>
           </div>
 
           {/* Form */}
-          <div className={`p-4 rounded-lg shadow-md mb-6 ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+          <div
+            className={`p-4 rounded-lg shadow-md mb-6 ${
+              theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+            }`}
+          >
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <InputField
                 label="Student Name"
@@ -117,12 +152,11 @@ const ExamResult = () => {
                 onChange={(e) => setStudentName(e.target.value)}
                 required
               />
-              <SelectField
+              <CustomSelect
                 label="Select Exam"
                 value={examId}
-                onChange={(e) => setExamId(e.target.value)}
-                options={examList.map(exam => ({ value: exam.id, label: exam.title }))}
-                required
+                onChange={(val) => setExamId(val)}
+                options={examList.map((exam) => ({ value: exam.id, label: exam.title }))}
               />
               <InputField
                 label="Marks"
@@ -137,8 +171,12 @@ const ExamResult = () => {
             </form>
           </div>
 
-          {/* Data Table */}
-          <div className={`p-4 rounded-lg shadow-md ${theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"}`}>
+          {/* Table */}
+          <div
+            className={`p-4 rounded-lg shadow-md ${
+              theme === "dark" ? "bg-esdarkblack text-white" : "bg-eswhite text-esblack"
+            }`}
+          >
             <DataTable
               loading={loading}
               data={filteredResults}
@@ -147,7 +185,10 @@ const ExamResult = () => {
                 {
                   label: "Exam",
                   field: "exam",
-                  render: (result) => examList.find(e => e.id === result.examId)?.title || "-"
+                  render: (result) => {
+                    const exam = examList.find((e) => e.id === result?.examId);
+                    return exam?.title || "-";
+                  },
                 },
                 { label: "Marks", field: "marks" },
                 {
@@ -155,8 +196,12 @@ const ExamResult = () => {
                   field: "actions",
                   render: (result) => (
                     <div className="flex gap-2">
-                      <PrimaryButton size="sm" onClick={() => handleEdit(result)}>Edit</PrimaryButton>
-                      <PrimaryButton size="sm" variant="danger" onClick={() => handleDelete(result.id)}>Delete</PrimaryButton>
+                      <PrimaryButton size="sm" onClick={() => handleEdit(result)}>
+                        Edit
+                      </PrimaryButton>
+                      <PrimaryButton size="sm" variant="danger" onClick={() => handleDelete(result.id)}>
+                        Delete
+                      </PrimaryButton>
                     </div>
                   ),
                 },
@@ -165,7 +210,6 @@ const ExamResult = () => {
           </div>
         </main>
 
-        {/* Footer */}
         <Footer style={{ marginLeft: sidebarWidth, width: `calc(100% - ${sidebarWidth}px)` }} />
       </div>
     </div>
