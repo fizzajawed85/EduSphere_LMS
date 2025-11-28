@@ -1,6 +1,6 @@
 // src/services/feeService.js
 import { getDatabase, ref, push, set, onValue, remove, update } from "firebase/database";
-import { db } from "../firebase/config"; // make sure your firebase config exports 'db'
+import { db } from "../../firebase/config"; // make sure your firebase config exports 'db'
 
 const feesRef = ref(getDatabase(db), "fees");
 
