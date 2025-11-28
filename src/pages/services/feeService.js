@@ -1,12 +1,11 @@
 // src/services/feeService.js
-import { getDatabase, ref, push, set, onValue, remove, update } from "firebase/database";
-import { db } from "../../firebase/config"; // make sure your firebase config exports 'db'
-
-const feesRef = ref(getDatabase(db), "fees");
+import { ref, push, set, onValue, remove, update } from "firebase/database";
+import { db } from "../../firebase/config"; 
 
 export const feeService = {
   getAllFees: () =>
     new Promise((resolve, reject) => {
+      const feesRef = ref(db, "fees"); // use db directly
       onValue(
         feesRef,
         (snapshot) => {
@@ -21,19 +20,20 @@ export const feeService = {
     }),
 
   addFee: async (fee) => {
+    const feesRef = ref(db, "fees");
     const newRef = push(feesRef);
     await set(newRef, fee);
     return { id: newRef.key, ...fee };
   },
 
   updateFee: async (id, fee) => {
-    const feeRef = ref(getDatabase(db), `fees/${id}`);
+    const feeRef = ref(db, `fees/${id}`);
     await update(feeRef, fee);
     return { id, ...fee };
   },
 
   deleteFee: async (id) => {
-    const feeRef = ref(getDatabase(db), `fees/${id}`);
+    const feeRef = ref(db, `fees/${id}`);
     await remove(feeRef);
     return id;
   },
